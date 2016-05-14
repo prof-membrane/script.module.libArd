@@ -44,8 +44,8 @@ def getPage(url,page=1):
 	
 #def getAZ(letter):
 #	return listing.getAZ(letter)
-def getVideosJson(url):
-	return libArdJsonParser.parseVideos(url)
+def getVideosJson(url,page = '1'):
+	return libArdJsonParser.parseVideos(url,page)
 
 def getVideosXml(videoId):
 	return listing.getVideosXml(videoId)
@@ -115,13 +115,15 @@ def libArdListMain():
 	libMediathek.addEntry({'name':'MV', 'mode':'libArdListVideosSinglePage', 'url':'http://www.ardmediathek.de/tv/Meistabgerufene-Videos/mehr?documentId=21282514&m23644322=quelle.tv&rss=true', 'pluginpath': pluginpath})
 	libMediathek.addEntry({'name':'Sendungen A-Z', 'mode':'libArdListLetters', 'pluginpath': pluginpath})
 	libMediathek.addEntry({'name':'Sendung nach Datum', 'mode':'libArdListDate'})
+	libMediathek.addEntry({'name':'Rubriken', 'mode':'libArdListVideos', 'url':'http://www.ardmediathek.de/appdata/servlet/tv/Rubriken/mehr?documentId=21282550&json'})
+	libMediathek.addEntry({'name':'Themen', 'mode':'libArdListVideos', 'url':'http://www.ardmediathek.de/appdata/servlet/tv/Themen/mehr?documentId=21301810&json'})
 	libMediathek.addEntry({'name':'Suche', 'mode':'libArdSearch', 'pluginpath': pluginpath})
 	
 def libArdListVideos():
 	page = params.get('page','1')
 	xbmc.log(str(params))
 	#items,nextPage = getPage(params['url'],page)
-	items = getVideosJson(params['url'])#,page)
+	items = getVideosJson(params['url'],params.get('page','1'))#,page)
 	for dict in items:
 		if "showname" in params and dict['name'].startswith(params['showname']):
 			i = len(params['showname'])

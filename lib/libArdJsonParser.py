@@ -21,12 +21,12 @@ def parseDate(url):
 			dict = {}
 			dict["name"] = entry["dachzeile"] + ' - '
 			dict["name"] += entry["ueberschrift"] + ' - '
-			j3 = entry["inhalte"][0]
-			dict["name"] += j3["ueberschrift"]
-			#dict["channel"] = j3["unterzeile"]
-			dict["thumb"] = j3["bilder"][0]["schemaUrl"].replace("##width##","0")
-			dict["url"] = j3["link"]["url"]
-			dict["duration"] = runtimeToInt(j3["unterzeile"])
+			j2 = entry["inhalte"][0]
+			dict["name"] += j2["ueberschrift"]
+			#dict["channel"] = j2["unterzeile"]
+			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","0")
+			dict["url"] = j2["link"]["url"]
+			dict["duration"] = runtimeToInt(j2["unterzeile"])
 			dict["pluginpath"] = pluginpath
 			dict["type"] = 'video'
 			dict['mode'] = 'libArdPlay'
@@ -34,6 +34,8 @@ def parseDate(url):
 	return list
 		
 def parseAZ(letter):
+	if letter == "0-9":
+		letter = '#'
 	list = []
 	response = _utils.getUrl("http://www.ardmediathek.de/appdata/servlet/tv/sendungAbisZ?json")
 	j = json.loads(response)
@@ -55,15 +57,20 @@ def parseAZ(letter):
 		
 	return list
 	
-def parseVideos(url):
+def parseVideos(url,page='1'):
 	list = []
 	response = _utils.getUrl(url)
 	xbmc.log(response)
 	j = json.loads(response)
-	#for e in j:
-	#	xbmc.log(str(e))
-	j1 = j["sections"][-1]["modCons"][-1]["mods"][0]["inhalte"]
-	for j2 in j1:
+	
+	#j1 = j["sections"][-1]["modCons"][-1]["mods"][-1]
+	
+	
+	#j1 = j["sections"][-1]["modCons"][-1]["mods"][-1]
+	j1 = j["sections"][-1]["modCons"][-1]["mods"][-1]
+	
+	for j2 in j1["inhalte"]:
+		xbmc.log(str(j2))
 		dict = {}
 		if "ueberschrift" in j2:
 			dict["name"] = j2["ueberschrift"].encode("utf-8")
@@ -75,18 +82,51 @@ def parseVideos(url):
 				dict["subtitle"] = False
 		if "bilder" in j2:
 			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
+		if "teaserTyp" in j2:
+			if j2["teaserTyp"] == "OnDemandClip":
+				dict["type"] = 'video'
+				dict['mode'] = 'libArdPlay'
+			elif j2["teaserTyp"] == "Sammlung":
+				dict["type"] = 'dir'
+				dict['mode'] = 'libArdListVideos'
+			else:
+				xbmc.log('json parser: unknown item type')
+				dict["type"] = 'dir'
+				dict['mode'] = 'libArdListVideos'
+				
 		if "link" in j2:
 			dict["url"] = j2["link"]["url"].encode("utf-8")
 			dict["documentId"] = j2["link"]["url"].split("/player/")[-1].split("?")[0].encode("utf-8")
 		if "dachzeile" in j2:
 			dict["releasedate"] = j2["dachzeile"].encode("utf-8")
 		dict["pluginpath"] = pluginpath
-		dict["type"] = 'video'
-		dict['mode'] = 'libArdPlay'
+		
 		
 		list.append(dict)
+	
+	
+	n = _fetchNextPage(j1["buttons"],page)
+	if n:
+		list.append(n)
+		
+	
 	return list#,False
-			
+	
+def _fetchNextPage(j,page):
+	dict = False
+	p = str(int(page) + 1)
+	for group in j:
+		if group["label"]["text"] == "Seiten":
+			for button in group["buttons"]:
+				url = button["buttonLink"]["url"]
+				if url.endswith('page.' + p):
+					dict = {}
+					dict["url"] = url
+					dict["page"] = p
+					dict["type"] = 'nextPage'
+					dict['mode'] = 'libArdListVideos'
+	return dict
+	
 def runtimeToInt(runtime):
 	try:
 		t = runtime.replace('Min','').replace('min','').replace('.','').replace(' ','').replace('|','').replace('UT','')
