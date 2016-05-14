@@ -83,14 +83,16 @@ def parseVideos(url,page='1'):
 		if "bilder" in j2:
 			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
 		if "teaserTyp" in j2:
-			if j2["teaserTyp"] == "OnDemandClip":
+			if j2["teaserTyp"] == "PermanentLivestreamClip" or j2["teaserTyp"] == "PodcastClip":
+				continue
+			elif j2["teaserTyp"] == "OnDemandClip":
 				dict["type"] = 'video'
 				dict['mode'] = 'libArdPlay'
 			elif j2["teaserTyp"] == "Sammlung":
 				dict["type"] = 'dir'
 				dict['mode'] = 'libArdListVideos'
 			else:
-				xbmc.log('json parser: unknown item type')
+				xbmc.log('json parser: unknown item type: ' + j2["teaserTyp"])
 				dict["type"] = 'dir'
 				dict['mode'] = 'libArdListVideos'
 				
