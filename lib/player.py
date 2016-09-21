@@ -62,12 +62,35 @@ def fetchTvaVideo(id):
 					print quality
 	if not finalUrl:
 		finalUrl = selectedVideoUrl
-		print '###############using mp4'
+		finalUrl = ndrPodcastHack(finalUrl)
+		finalUrl = dwHack(finalUrl)
+		#print '###############using mp4'
 	else:
 		print '###############using HLS'
 
 	return finalUrl
 
+def ndrPodcastHack(url):
+	try:
+		if url.startswith('http://media.ndr.de/download/podcasts/'):
+			#http://media.ndr.de/download/podcasts/minuten805/TV-20160115-1405-2242.h264.mp4
+			#http://hls.ndr.de/i/ndr/2016/0115/TV-20160115-1405-2242.,lo,hi,hq,hd,.mp4.csmil/master.m3u8
+			
+			uri = url.split('/')[-1]
+			YYYYMMDD = uri.split('-')[1]
+			YYYY = YYYYMMDD[:4]
+			MMDD = YYYYMMDD[4:]
+			
+			return 'http://hls.ndr.de/i/ndr/' + YYYY + '/' + MMDD + '/' + uri.replace('.h264.mp4','.,lo,hi,hq,hd,.mp4.csmil/master.m3u8')
+	except: pass
+	return url
+def dwHack(url):
+	try:
+		if url.startswith('http://tv-download.dw.de'):
+			#return url.replace('_sd.mp4','_hd.mp4')
+			return url.replace('_sd.mp4','_hd_dwdownload.mp4')
+	except: pass
+	return url
 ### video type to bitrate###
 qualityDict = {'2012:1.58': 1620000,
 			   '2012:1.83': 47000,

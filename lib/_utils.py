@@ -5,6 +5,7 @@ import xbmc
 import xbmcaddon
 import xbmcvfs
 import re
+socket.setdefaulttimeout(30)
 temp = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')+'temp').decode('utf-8')
 dict = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile')+'dict.py').decode('utf-8')
 

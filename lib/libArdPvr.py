@@ -9,12 +9,15 @@ import libMediathek
 channelList = {'daserste':'208',
 			   'br':'2224',
 			   'wdr':'5902',
+			   'wdrköln':'5902',#TODO
 			   'einsfestival':'673348',
 			   'mdr':'5882',
 			   'mdrsachsen':'1386804',
 			   'mdrthüringen':'1386988',
 			   'mdrsachsenanhalt':'1386898',
 			   'rbb':'5874',
+			   'rbbberlin':'5874',#TODO
+			   'rbbbrandenburg':'5874',#TODO
 			   'sr':'5870',
 			   'hr':'5884',
 			   'ndr':'5906',

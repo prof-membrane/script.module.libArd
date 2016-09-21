@@ -27,7 +27,7 @@ def parseDate(url):
 			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","0")
 			dict["url"] = j2["link"]["url"]
 			dict["duration"] = runtimeToInt(j2["unterzeile"])
-			dict["pluginpath"] = pluginpath
+			#dict["pluginpath"] = pluginpath
 			dict["type"] = 'video'
 			dict['mode'] = 'libArdPlay'
 			list.append(dict)
@@ -47,11 +47,15 @@ def parseAZ(letter):
 		dict = {}
 		dict["name"] = entry["ueberschrift"].encode("utf-8")
 		dict["channel"] = entry["unterzeile"].encode("utf-8")
-		dict["thumb"] = entry["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
+		dict["entries"] = int(entry["dachzeile"].encode("utf-8").split(' ')[0])
+		#dict["thumb"] = entry["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
+		dict["thumb"] = entry["bilder"][0]["schemaUrl"].replace("##width##","1920").encode("utf-8")
 		dict["url"] = entry["link"]["url"].encode("utf-8")
+		dict['mode'] = 'libArdListVideos'
 		#dict["documentId"] = entry["link"]["url"].split("documentId=")[1].split("&")[0]
-		dict["pluginpath"] = pluginpath
-		dict["type"] = 'dir'
+		#dict["pluginpath"] = pluginpath
+		dict["type"] = 'shows'
+		xbmc.log(str(dict))
 		list.append(dict)
 		
 		
@@ -74,14 +78,23 @@ def parseVideos(url,page='1'):
 		dict = {}
 		if "ueberschrift" in j2:
 			dict["name"] = j2["ueberschrift"].encode("utf-8")
+			if 'Hörfassung' in dict["name"] or 'Audiodeskription' in dict["name"]:
+				dict["name"] = dict["name"].replace(' - Hörfassung','').replace(' - Audiodeskription','')
+				dict["name"] = dict["name"].replace(' (mit Hörfassung)','').replace(' (mit Audiodeskription)','')
+				dict["name"] = dict["name"].replace(' mit Hörfassung','').replace(' mit Audiodeskription','')
+				dict["name"] = dict["name"].replace(' (Hörfassung)','').replace(' (Audiodeskription)','')
+				dict["name"] = dict["name"].replace(' Hörfassung','').replace(' Audiodeskription','')
+				dict["name"] = dict["name"].replace('Hörfassung','').replace('Audiodeskription','')
+				dict["name"] = dict["name"].strip()
+				if dict["name"].endswith(' -'):
+					dict["name"] = dict["name"][:-2]
+				dict["name"] = dict["name"] + ' - Hörfassung'
+				dict["audioDesc"] = True
+				
 		if "unterzeile" in j2:
 			dict["duration"] = runtimeToInt(j2["unterzeile"])
-			if "UT" in j2["unterzeile"]:
-				dict["subtitle"] = True
-			else:
-				dict["subtitle"] = False
 		if "bilder" in j2:
-			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
+			dict["thumb"] = j2["bilder"][0]["schemaUrl"].replace("##width##","384").encode("utf-8")
 		if "teaserTyp" in j2:
 			if j2["teaserTyp"] == "PermanentLivestreamClip" or j2["teaserTyp"] == "PodcastClip":
 				continue
@@ -101,7 +114,19 @@ def parseVideos(url,page='1'):
 			dict["documentId"] = j2["link"]["url"].split("/player/")[-1].split("?")[0].encode("utf-8")
 		if "dachzeile" in j2:
 			dict["releasedate"] = j2["dachzeile"].encode("utf-8")
-		dict["pluginpath"] = pluginpath
+		if 'ut' in j2['kennzeichen']:
+			dict["subtitle"] = True
+		if 'geo' in j2['kennzeichen']:
+			dict['geo'] = 'DACH'
+		if 'fsk6' in j2['kennzeichen']:
+			dict['mpaa'] = 'FSK6'
+		if 'fsk12' in j2['kennzeichen']:
+			dict['mpaa'] = 'FSK12'
+		if 'fsk16' in j2['kennzeichen']:
+			dict['mpaa'] = 'FSK16'
+		if 'fsk18' in j2['kennzeichen']:
+			dict['mpaa'] = 'FSK18'
+		#dict["pluginpath"] = pluginpath
 		
 		
 		list.append(dict)
@@ -112,7 +137,7 @@ def parseVideos(url,page='1'):
 		list.append(n)
 		
 	
-	return list#,False
+	return list
 	
 def _fetchNextPage(j,page):
 	dict = False
@@ -130,7 +155,14 @@ def _fetchNextPage(j,page):
 	return dict
 	
 def runtimeToInt(runtime):
+	xbmc.log(str(runtime))
 	try:
+		if '|' in runtime:
+			for s in runtime.split('|'):
+				if 'Min' in s:
+					runtime = s
+		if '<br>' in runtime:
+			runtime = runtime.split('<br>')[0]
 		t = runtime.replace('Min','').replace('min','').replace('.','').replace(' ','').replace('|','').replace('UT','')
 		xbmc.log(t)
 		HHMM = t.split(':')

@@ -44,7 +44,29 @@ def getUrl(url):
     response.close()
     return link
 
-print ''
-print '#0-9'
-scrapeDescriptions('0-9')
+def AZ():
+	list = []
+	response = getUrl("http://www.ardmediathek.de/appdata/servlet/tv/sendungAbisZ?json")
+	j = json.loads(response)
+	j1 = j["sections"][0]["modCons"][0]["mods"][0]["inhalte"]
+	for e in j1:
+		j2 = e["inhalte"]
+		for entry in j2:
+			dict = {}
+			dict["name"] = entry["ueberschrift"].encode("utf-8")
+			#dict["channel"] = entry["unterzeile"].encode("utf-8")
+			#dict["entries"] = int(entry["dachzeile"].encode("utf-8").split(' ')[0])
+			#dict["thumb"] = entry["bilder"][0]["schemaUrl"].replace("##width##","0").encode("utf-8")
+			dict["url"] = entry["link"]["url"].encode("utf-8")
+			#dict['mode'] = 'libArdListVideos'
+			#dict["documentId"] = entry["link"]["url"].split("documentId=")[1].split("&")[0]
+			#dict["pluginpath"] = pluginpath
+			#dict["type"] = 'dir'
+			list.append(dict)
+		
+		
+	return list
+import json
+print str(AZ())
+
 

@@ -138,11 +138,13 @@ def listDate(url):
 			else:
 				dict['duration'] = str(int(length)*60)
 			if name in titel:
-				dict['name'] = dict['time'] + ' - ' + titel
+				dict['name'] = time + ' - ' + titel
 			elif titel in name:
-				dict['name'] = dict['time'] + ' - ' + name
+				dict['name'] = time + ' - ' + name
 			else:
-				dict['name'] = dict['time'] + ' - ' + titel+' - '+name
+				dict['name'] = time + ' - ' + titel+' - '+name
+			HH,MM = time.split(':')
+			dict['time'] = int(HH)*60 + int(MM)
 			dict['thumb'] = 'http://www.ardmediathek.de/ard/servlet'+thumb+'0'
 			dict['plot'] = plot
 			dict['url'] = baseUrl+url.replace('&amp;','&')
@@ -150,9 +152,9 @@ def listDate(url):
 			dict['name'] = h.unescape(dict['name'])
 			dict['name'] = dict['name'].encode('utf-8')
 			dict['documentId'] = dict['url'].encode('utf-8').split("documentId=")[-1]
+			dict['mode'] = 'libArdPlay'
+			dict['type'] = 'video'
 			list.append(dict)
-	#print entry
-	
 	return list	
 	
 def listVideos(url,page=1):
@@ -173,7 +175,9 @@ def listVideos(url,page=1):
 		if match:
 			subtitle = match[0].split(" | ")
 			dict["date"] = subtitle[0]
-			dict["duration"] = int(subtitle[1].replace(" Min.",""))*60
+			try:
+				dict["duration"] = int(subtitle[1].replace(" Min.",""))*60
+			except: pass
 			dict["channel"] = subtitle[2]
 			if len(subtitle) > 3:
 				if subtitle[3] == "UT":
